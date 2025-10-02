@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCARS - Predictive Crisis Management Workflow</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .header { 
+            background: linear-gradient(135deg, #2c3e50, #3498db); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 300; }
+        .header p { font-size: 1.2rem; opacity: 0.9; }
+        .content { padding: 40px; }
+        
+        .workflow-container {
+            position: relative;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        
+        .workflow-stage {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .stage-number {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 30px;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .stage-content {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stage-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .stage-description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .stage-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #e74c3c;
+            font-size: 0.9rem;
+        }
+        
+        .detail-item.monitoring { border-left-color: #e74c3c; }
+        .detail-item.analysis { border-left-color: #f39c12; }
+        .detail-item.prediction { border-left-color: #9b59b6; }
+        .detail-item.decision { border-left-color: #27ae60; }
+        .detail-item.execution { border-left-color: #3498db; }
+        
+        .arrow {
+            position: absolute;
+            left: 30px;
+            bottom: -20px;
+            font-size: 2rem;
+            color: #3498db;
+            z-index: 10;
+        }
+        
+        .data-sources {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .data-source {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .data-source::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        .data-source-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .data-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .integration-map {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .integration-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #ecf0f1;
+        }
+        
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .integration-item {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #3498db;
+        }
+        
+        .integration-item h4 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .benefits-section {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .benefit-card {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .benefit-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #f1c40f;
+        }
+        
+        .timeline-visual {
+            background: #ecf0f1;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .timeline-title {
+            text-align: center;
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 40px 0;
+        }
+        
+        .timeline-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #3498db;
+            z-index: 1;
+        }
+        
+        .timeline-step {
+            background: white;
+            border: 4px solid #3498db;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 2;
+            position: relative;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .real-time-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .tech-item {
+            background: #34495e;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .tech-item h4 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .responsive-design {
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .stage-content { margin-left: 0; margin-top: 20px; }
+            .workflow-stage { flex-direction: column; align-items: flex-start; }
+            .data-sources, .integration-grid, .benefits-grid { grid-template-columns: 1fr; }
+            .timeline-steps { flex-direction: column; gap: 20px; }
+            .timeline-steps::before { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="real-time-indicator">🔴 PCARS ACTIVE</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>PCARS Workflow Architecture</h1>
+            <p>Predictive Crisis Management & Auto-Recovery System</p>
+        </div>
+        
+        <div class="content">
+            <div class="responsive-design">
+                <div class="workflow-container">
+                    <!-- Stage 1: Data Ingestion & Monitoring -->
+                    <div class="workflow-stage">
+                        <div class="stage-number">1</div>
+                        <div class="stage-content">
+                            <div class="stage-title">🔍 Real-Time Data Ingestion & Monitoring</div>
+                            <div class="stage-description">
+                                Continuous monitoring of 500+ risk indicators across internal and external data sources. 
+                                AI models process real-time feeds to identify potential disruption signals.
+                            </div>
+                            <div class="stage-details">
+                                <div class="detail-item monitoring">
+                                    <strong>Internal Data:</strong><br>
+                                    Vehicle locations, inventory levels, equipment status, performance metrics
+                                </div>
+                                <div class="detail-item monitoring">
+                                    <strong>External APIs:</strong><br>
+                                    Weather forecasts, traffic conditions, economic indicators, news feeds
+                                </div>
+                                <div class="detail-item monitoring">
+                                    <strong>IoT Sensors:</strong><br>
+                                    Temperature monitors, GPS trackers, fuel sensors, maintenance alerts
+                                </div>
+                                <div class="detail-item monitoring">
+                                    <strong>Social Intelligence:</strong><br>
+                                    Social media sentiment, industry reports, supplier communications
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+
+                    <!-- Stage 2: Risk Assessment Engine -->
+                    <div class="workflow-stage">
+                        <div class="stage-number">2</div>
+                        <div class="stage-content">
+                            <div class="stage-title">⚡ AI Risk Assessment Engine</div>
+                            <div class="stage-description">
+                                Advanced machine learning models analyze data patterns and calculate risk probabilities 
+                                for potential disruptions across multiple time horizons (6h, 24h, 72h).
+                            </div>
+                            <div class="stage-details">
+                                <div class="detail-item analysis">
+                                    <strong>Pattern Recognition:</strong><br>
+                                    Historical disruption analysis, seasonal patterns, correlation identification
+                                </div>
+                                <div class="detail-item analysis">
+                                    <strong>Probability Modeling:</strong><br>
+                                    Monte Carlo simulations, confidence intervals, uncertainty quantification
+                                </div>
+                                <div class="detail-item analysis">
+                                    <strong>Impact Assessment:</strong><br>
+                                    Cost calculations, customer effects, operational consequences
+                                </div>
+                                <div class="detail-item analysis">
+                                    <strong>Cascading Analysis:</strong><br>
+                                    Interdependency mapping, chain reaction modeling, compound risk evaluation
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+
+                    <!-- Stage 3: Predictive Modeling -->
+                    <div class="workflow-stage">
+                        <div class="stage-number">3</div>
+                        <div class="stage-content">
+                            <div class="stage-title">🔮 Predictive Disruption Modeling</div>
+                            <div class="stage-description">
+                                Deep learning models trained on 15+ years of global supply chain data predict specific 
+                                disruption scenarios with location, timing, and impact details.
+                            </div>
+                            <div class="stage-details">
+                                <div class="detail-item prediction">
+                                    <strong>Weather Disruptions:</strong><br>
+                                    Storm tracking, road closures, airport delays, port shutdowns
+                                </div>
+                                <div class="detail-item prediction">
+                                    <strong>Traffic & Infrastructure:</strong><br>
+                                    Congestion predictions, construction delays, accident probabilities
+                                </div>
+                                <div class="detail-item prediction">
+                                    <strong>Supplier Issues:</strong><br>
+                                    Production delays, quality problems, financial instability
+                                </div>
+                                <div class="detail-item prediction">
+                                    <strong>Demand Fluctuations:</strong><br>
+                                    Market changes, seasonal variations, promotional impacts
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+
+                    <!-- Stage 4: Decision Engine -->
+                    <div class="workflow-stage">
+                        <div class="stage-number">4</div>
+                        <div class="stage-content">
+                            <div class="stage-title">🎯 Intelligent Decision Engine</div>
+                            <div class="stage-description">
+                                AI evaluates multiple response strategies using cost-benefit analysis and selects 
+                                optimal interventions based on pre-approved business rules and risk thresholds.
+                            </div>
+                            <div class="stage-details">
+                                <div class="detail-item decision">
+                                    <strong>Threshold Evaluation:</strong><br>
+                                    Risk vs. cost analysis, intervention timing optimization
+                                </div>
+                                <div class="detail-item decision">
+                                    <strong>Strategy Selection:</strong><br>
+                                    Route alternatives, supplier switches, inventory rebalancing
+                                </div>
+                                <div class="detail-item decision">
+                                    <strong>Resource Allocation:</strong><br>
+                                    Vehicle reassignment, crew scheduling, capacity optimization
+                                </div>
+                                <div class="detail-item decision">
+                                    <strong>Approval Workflows:</strong><br>
+                                    Automated decisions vs. human approval requirements
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+
+                    <!-- Stage 5: Auto-Response Execution -->
+                    <div class="workflow-stage">
+                        <div class="stage-number">5</div>
+                        <div class="stage-content">
+                            <div class="stage-title">🚀 Automated Response Execution</div>
+                            <div class="stage-description">
+                                Multi-system orchestration automatically implements selected interventions across 
+                                ERP, TMS, WMS, and communication systems with real-time coordination.
+                            </div>
+                            <div class="stage-details">
+                                <div class="detail-item execution">
+                                    <strong>System Integration:</strong><br>
+                                    ERP updates, inventory adjustments, order modifications
+                                </div>
+                                <div class="detail-item execution">
+                                    <strong>Logistics Coordination:</strong><br>
+                                    Route changes, carrier notifications, delivery rescheduling
+                                </div>
+                                <div class="detail-item execution">
+                                    <strong>Communication:</strong><br>
+                                    Customer alerts, supplier notices, team notifications
+                                </div>
+                                <div class="detail-item execution">
+                                    <strong>Monitoring:</strong><br>
+                                    Performance tracking, adjustment implementation, success validation
+                                </div>
+                            </div>
+                        </div>
+                        <div class="arrow">↓</div>
+                    </div>
+
+                    <!-- Stage 6: Learning & Optimization -->
+                    <div class="workflow-stage">
+                        <div class="stage-number">6</div>
+                        <div class="stage-content">
+                            <div class="stage-title">📈 Continuous Learning & Optimization</div>
+                            <div class="stage-description">
+                                System analyzes response effectiveness and continuously improves prediction accuracy 
+                                and decision-making through advanced machine learning feedback loops.
+                            </div>
+                            <div class="stage-details">
+                                <div class="detail-item analysis">
+                                    <strong>Performance Analysis:</strong><br>
+                                    Success rate tracking, cost effectiveness measurement
+                                </div>
+                                <div class="detail-item analysis">
+                                    <strong>Model Improvement:</strong><br>
+                                    Algorithm refinement, accuracy enhancement, bias correction
+                                </div>
+                                <div class="detail-item analysis">
+                                    <strong>Strategy Evolution:</strong><br>
+                                    New response patterns, optimization techniques, best practices
+                                </div>
+                                <div class="detail-item analysis">
+                                    <strong>Knowledge Base:</strong><br>
+                                    Historical case studies, pattern libraries, decision templates
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Sources Section -->
+            <h2 style="text-align: center; color: #2c3e50; margin: 40px 0;">Data Sources & Intelligence Feeds</h2>
+            <div class="data-sources">
+                <div class="data-source">
+                    <div class="data-source-content">
+                        <span class="data-icon">🌦️</span>
+                        <h4>Weather Intelligence</h4>
+                        <p>Advanced meteorological APIs, storm tracking, seasonal forecasting</p>
+                    </div>
+                </div>
+                <div class="data-source">
+                    <div class="data-source-content">
+                        <span class="data-icon">🚛</span>
+                        <h4>Transportation Data</h4>
+                        <p>Real-time traffic, GPS tracking, vehicle telemetrics, route optimization</p>
+                    </div>
+                </div>
+                <div class="data-source">
+                    <div class="data-source-content">
+                        <span class="data-icon">📊</span>
+                        <h4>Economic Indicators</h4>
+                        <p>Market analysis, commodity prices, financial stability metrics</p>
+                    </div>
+                </div>
+                <div class="data-source">
+                    <div class="data-source-content">
+                        <span class="data-icon">🏭</span>
+                        <h4>Supplier Intelligence</h4>
+                        <p>Production schedules, quality metrics, financial health monitoring</p>
+                    </div>
+                </div>
+                <div class="data-source">
+                    <div class="data-source-content">
+                        <span class="data-icon">📱</span>
+                        <h4>Social Listening</h4>
+                        <p>News feeds, social media sentiment, industry reports, disruption signals</p>
+                    </div>
+                </div>
+                <div class="data-source">
+                    <div class="data-source-content">
+                        <span class="data-icon">🔧</span>
+                        <h4>IoT Sensors</h4>
+                        <p>Equipment monitoring, environmental conditions, predictive maintenance</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Integration Map -->
+            <div class="integration-map">
+                <h3 class="integration-title">System Integration Architecture</h3>
+                <div class="integration-grid">
+                    <div class="integration-item">
+                        <h4>ERP Integration</h4>
+                        <p>Purchase orders, inventory management, financial controls</p>
+                    </div>
+                    <div class="integration-item">
+                        <h4>TMS Integration</h4>
+                        <p>Route optimization, carrier management, delivery scheduling</p>
+                    </div>
+                    <div class="integration-item">
+                        <h4>WMS Integration</h4>
+                        <p>Warehouse operations, stock movements, fulfillment processes</p>
+                    </div>
+                    <div class="integration-item">
+                        <h4>Communication Hub</h4>
+                        <p>Customer notifications, supplier alerts, team coordination</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Visual -->
+            <div class="timeline-visual">
+                <div class="timeline-title">PCARS Response Timeline</div>
+                <div class="timeline-steps">
+                    <div class="timeline-step">
+                        <div>Risk</div>
+                        <div>Detection</div>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">0-2 min</div>
+                    </div>
+                    <div class="timeline-step">
+                        <div>Impact</div>
+                        <div>Analysis</div>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">2-5 min</div>
+                    </div>
+                    <div class="timeline-step">
+                        <div>Decision</div>
+                        <div>Engine</div>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">5-8 min</div>
+                    </div>
+                    <div class="timeline-step">
+                        <div>Response</div>
+                        <div>Execution</div>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">8-15 min</div>
+                    </div>
+                    <div class="timeline-step">
+                        <div>Monitoring</div>
+                        <div>& Adjust</div>
+                        <div style="font-size: 0.7rem; margin-top: 5px;">Ongoing</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Stack -->
+            <h2 style="text-align: center; color: #2c3e50; margin: 40px 0;">Technology Stack</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <h4>AI/ML Framework</h4>
+                    <p>TensorFlow, PyTorch, Scikit-learn, Custom neural networks</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Cloud Platform</h4>
+                    <p>AWS/Azure AI services, Auto-scaling, Real-time processing</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Integration Layer</h4>
+                    <p>REST APIs, Microservices, Event-driven architecture</p>
+                </div>
+            </div>
+
+            <!-- Benefits Section -->
+            <div class="benefits-section">
+                <h2 style="text-align: center; margin-bottom: 20px;">PCARS Business Impact</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <div class="benefit-number">60%</div>
+                        <div>Reduction in Supply Chain Disruptions</div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-number">$800K+</div>
+                        <div>Annual Cost Savings</div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-number">24-72h</div>
+                        <div>Advance Warning Period</div>
+                    </div>
+                    <div class="benefit-card">
+                        <div class="benefit-number">92%</div>
+                        <div>Prediction Accuracy Rate</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 30px; font-size: 1.2rem;">
+                    <strong>Transform from reactive crisis management to proactive disruption prevention</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
